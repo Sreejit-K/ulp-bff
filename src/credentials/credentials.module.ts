@@ -6,6 +6,7 @@ import { TelemetryService } from 'src/services/telemetry/telemetry.service';
 import { CredentialsController } from './credentials.controller';
 import { CredentialsService } from './credentials.service';
 import { KeycloakService } from 'src/services/keycloak/keycloak.service';
+import { AadharService } from '../services/aadhar/aadhar.service';
 
 @Module({
   controllers: [CredentialsController],
@@ -15,6 +16,7 @@ import { KeycloakService } from 'src/services/keycloak/keycloak.service';
     SbrcService,
     TelemetryService,
     KeycloakService,
+    AadharService,
   ],
 })
 export class CredentialsModule {}

@@ -13,12 +13,42 @@ export class KeycloakService {
     client_id: process.env.KEYCLOAK_CLIENT_ID,
     client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
   };
+  async getUserTokenAccount(token: string) {
+    const url =
+      process.env.KEYCLOAK_URL +
+      'realms/' +
+      process.env.KEYCLOAK_REALM_ID +
+      '/account';
 
+    const config: AxiosRequestConfig = {
+      headers: {
+        'content-type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
+    };
+
+    let response_text = null;
+    try {
+      const observable = this.httpService.get(url, config);
+
+      const promise = observable.toPromise();
+
+      const response = await promise;
+
+      //console.log(JSON.stringify(response.data));
+      response_text = response.data;
+    } catch (error) {
+      //console.log(e);
+      response_text = { error: error };
+    }
+
+    return response_text;
+  }
   async verifyUserToken(token: string) {
     const url =
       process.env.KEYCLOAK_URL +
       'realms/' +
-      process.env.REALM_ID +
+      process.env.KEYCLOAK_REALM_ID +
       '/protocol/openid-connect/userinfo';
 
     const config: AxiosRequestConfig = {
@@ -53,7 +83,7 @@ export class KeycloakService {
     const url =
       process.env.KEYCLOAK_URL +
       'realms/' +
-      process.env.REALM_ID +
+      process.env.KEYCLOAK_REALM_ID +
       '/protocol/openid-connect/token';
 
     const config: AxiosRequestConfig = {
@@ -90,7 +120,7 @@ export class KeycloakService {
     const url =
       process.env.KEYCLOAK_URL +
       'realms/' +
-      process.env.REALM_ID +
+      process.env.KEYCLOAK_REALM_ID +
       '/protocol/openid-connect/token';
 
     const config: AxiosRequestConfig = {
@@ -132,7 +162,7 @@ export class KeycloakService {
     const url =
       process.env.KEYCLOAK_URL +
       'admin/realms/' +
-      process.env.REALM_ID +
+      process.env.KEYCLOAK_REALM_ID +
       '/users';
 
     const config: AxiosRequestConfig = {
@@ -173,7 +203,7 @@ export class KeycloakService {
     const url =
       process.env.KEYCLOAK_URL +
       'admin/realms/' +
-      process.env.REALM_ID +
+      process.env.KEYCLOAK_REALM_ID +
       '/users';
 
     const config: AxiosRequestConfig = {
@@ -196,5 +226,77 @@ export class KeycloakService {
     }
 
     return response_text;
+  }
+
+  // register user in keycloak
+  async deleteUserKeycloak(username, clientToken) {
+    try {
+      //delete keycloak user
+      //get client token
+      let client_token = clientToken;
+      let keycloak_user = username;
+      //console.log('client_token', client_token);
+      //get user id
+      let search_keycloak_user = await new Promise<any>(async (done) => {
+        const url =
+          process.env.KEYCLOAK_URL +
+          'admin/realms/sunbird-rc/users?username=' +
+          keycloak_user;
+        const config: AxiosRequestConfig = {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + client_token,
+          },
+        };
+        let response_data = null;
+        try {
+          const observable = this.httpService.get(url, config);
+          const promise = observable.toPromise();
+          const response = await promise;
+          response_data = response.data;
+        } catch (e) {
+          response_data = { error: e };
+        }
+        done(response_data);
+      });
+      if (search_keycloak_user?.error) {
+        return { error: search_keycloak_user?.error };
+      } else {
+        let user_id = search_keycloak_user[0].id;
+        console.log('user_id', user_id);
+        //delete user
+        let search_keycloak_user_delete = await new Promise<any>(
+          async (done) => {
+            const url =
+              process.env.KEYCLOAK_URL +
+              'admin/realms/sunbird-rc/users/' +
+              user_id;
+            const config: AxiosRequestConfig = {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + client_token,
+              },
+            };
+            let response_data = null;
+            try {
+              const observable = this.httpService.delete(url, config);
+              const promise = observable.toPromise();
+              const response = await promise;
+              response_data = response.data;
+            } catch (e) {
+              response_data = { error: e };
+            }
+            done(response_data);
+          },
+        );
+        if (search_keycloak_user_delete?.error) {
+          return { error: search_keycloak_user_delete?.error };
+        } else {
+          return { success: true };
+        }
+      }
+    } catch (e) {
+      return { error: e };
+    }
   }
 }
