@@ -13,7 +13,7 @@ const KEYCLOAK_CLIENT_SECRET = process.env.KEYCLOAK_CLIENT_SECRET;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
-  await app.listen(3000);
+  await app.listen(port);
   console.log('CRED_URL', CRED_URL);
   console.log('DID_URL', DID_URL);
   console.log('SCHEMA_URL', SCHEMA_URL);

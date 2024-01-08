@@ -382,16 +382,8 @@ export class CredentialsService {
 
   //renderCredentials
   async renderCredentials(
-    token: string,
     requestbody: any,
   ): Promise<string | StreamableFile> {
-    if (token) {
-      const studentUsername = await this.keycloakService.verifyUserToken(token);
-      if (studentUsername?.error) {
-        return 'Keycloak Student Token Expired';
-      } else if (!studentUsername?.preferred_username) {
-        return 'Keycloak Student Token Expired';
-      } else {
         let filetype = 'text/html';
         let credentialid = requestbody?.credentialid;
         let templateid = requestbody?.templateid;
@@ -428,41 +420,41 @@ export class CredentialsService {
             let modifiedHtml = null;
 
             const modified = await new Promise((resolve, reject) => {
-              qr.toDataURL(url, function (err, code) {
-                if (err) {
-                  resolve(null);
-                  return;
-                }
+            qr.toDataURL(url, function (err, code) {
+            if (err) {
+            resolve(null);
+            return;
+            }
 
-                if (code) {
-                  const newHtml = code;
+            if (code) {
+            const newHtml = code;
 
-                  const root = parse(render_response);
+            const root = parse(render_response);
 
-                  // Find the img tag with id "qrcode"
-                  const qrcodeImg = root.querySelector('#qrcode');
+            // Find the img tag with id "qrcode"
+            const qrcodeImg = root.querySelector('#qrcode');
 
-                  if (qrcodeImg) {
-                    qrcodeImg.setAttribute('src', newHtml);
-                    modifiedHtml = root.toString();
+            if (qrcodeImg) {
+            qrcodeImg.setAttribute('src', newHtml);
+            modifiedHtml = root.toString();
 
-                    resolve(modifiedHtml);
-                  } else {
-                    resolve(null);
-                  }
+            resolve(modifiedHtml);
+            } else {
+            resolve(null);
+            }
                 } else {
-                  resolve(null);
-                }
+            resolve(null);
+            }
               });
             });
 
             if (!modified) {
-              return new StreamableFile(
-                await wkhtmltopdf(render_response, {
-                  pageSize: 'A4',
-                  disableExternalLinks: true,
-                  disableInternalLinks: true,
-                  disableJavascript: true,
+            return new StreamableFile(
+            await wkhtmltopdf(render_response, {
+                pageSize: 'A4',
+                disableExternalLinks: true,
+                disableInternalLinks: true,
+                disableJavascript: true,
                 }),
               );
             } else {
@@ -481,10 +473,6 @@ export class CredentialsService {
             return 'HTML to PDF Convert Fail';
           }
         }
-      }
-    } else {
-      return 'Student Token Not Received';
-    }
   }
 
   //renderCredentialsHTML
@@ -493,23 +481,6 @@ export class CredentialsService {
     requestbody: any,
     response: Response,
   ) {
-    if (token) {
-      const studentUsername = await this.keycloakService.verifyUserToken(token);
-      if (studentUsername?.error) {
-        return response.status(401).send({
-          success: false,
-          status: 'keycloak_token_bad_request',
-          message: 'You do not have access for this request.',
-          result: null,
-        });
-      } else if (!studentUsername?.preferred_username) {
-        return response.status(400).send({
-          success: false,
-          status: 'keycloak_token_error',
-          message: 'Your Login Session Expired.',
-          result: null,
-        });
-      } else {
         let filetype = 'text/html';
         let credentialid = requestbody?.credentialid;
         let templateid = requestbody?.templateid;
@@ -600,15 +571,6 @@ export class CredentialsService {
             });
           }
         }
-      }
-    } else {
-      return response.status(400).send({
-        success: false,
-        status: 'invalid_request',
-        message: 'Invalid Request. Not received token.',
-        result: null,
-      });
-    }
   }
 
   //credentialsVerify

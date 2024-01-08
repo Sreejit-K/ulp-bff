@@ -71,23 +71,19 @@ export class CredentialsController {
   }
   @Post('/render')
   async renderCredentials(
-    @Headers('Authorization') auth: string,
     @Body() requestbody: any,
     @Res({ passthrough: true }) response,
   ): Promise<string | StreamableFile> {
-    const jwt = auth.replace('Bearer ', '');
     response.header('Content-Type', 'application/pdf');
 
-    return this.credentialsService.renderCredentials(jwt, requestbody);
+    return this.credentialsService.renderCredentials( requestbody);
   }
   @Post('/renderhtml')
   async renderCredentialsHTML(
-    @Headers('Authorization') auth: string,
     @Body() requestbody: any,
     @Res() response: Response,
   ) {
-    const jwt = auth.replace('Bearer ', '');
-    return this.credentialsService.renderCredentialsHTML(jwt, requestbody, response);
+    return this.credentialsService.renderCredentialsHTML("", requestbody, response);
   }
   //credentialsVerify
   @Get('/verify/:id')
